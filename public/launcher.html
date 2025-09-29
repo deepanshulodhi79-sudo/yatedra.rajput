@@ -1,26 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="utf-8" />
   <title>Fast Mailer</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="form-box">
-    <h2>📧 Fast Mail Launcher</h2>
+  <main class="form-box">
+    <div class="top-row">
+      <h2>📧 Fast Mail Launcher</h2>
+      <button id="logoutSmall" class="ghost">Logout</button>
+    </div>
 
-    <input id="senderName" placeholder="Sender Name">
-    <input id="email" placeholder="Your Gmail">
-    <input id="pass" type="password" placeholder="App Password">
+    <input id="senderName" placeholder="Sender name (optional)" />
+    <input id="email" placeholder="Your Gmail (example@gmail.com)" autocomplete="email" />
+    <input id="pass" type="password" placeholder="App password (Gmail app password)" autocomplete="current-password" />
 
-    <textarea id="recipients" placeholder="Recipients (comma or newline)"></textarea>
-    <input id="subject" placeholder="Subject">
+    <textarea id="recipients" placeholder="Recipients — comma or newline separated"></textarea>
+    <input id="subject" placeholder="Subject" />
     <textarea id="message" placeholder="Message"></textarea>
 
-    <button id="sendBtn" onclick="sendMail()">Send All</button>
-    <button onclick="logout()">Logout</button>
+    <button id="sendBtn">Send All</button>
 
-    <p id="statusMessage"></p>
-  </div>
+    <p id="statusMessage" class="muted"></p>
+  </main>
+
   <script src="script.js"></script>
+  <script>
+    // attach buttons
+    document.getElementById('sendBtn').addEventListener('click', sendMail);
+    document.getElementById('logoutSmall').addEventListener('click', logout);
+    // check auth on load
+    checkAuth();
+  </script>
 </body>
 </html>
