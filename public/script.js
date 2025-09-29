@@ -1,6 +1,5 @@
-// script.js - frontend logic (uses server-side session auth)
+// FRONTEND - session based
 
-// LOGIN
 function login() {
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
@@ -15,47 +14,29 @@ function login() {
 
   fetch('/login', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({username, password})
   })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      window.location.href = '/launcher';
-    } else {
-      status.innerText = data.message || 'Login failed';
-      status.style.color = 'red';
-    }
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.success){ window.location.href='/launcher'; }
+    else { status.innerText=data.message; status.style.color='red'; }
   })
-  .catch(err => {
-    status.innerText = 'Error: ' + err.message;
-    status.style.color = 'red';
-  });
+  .catch(err => { status.innerText='Error: '+err.message; status.style.color='red'; });
 }
 
-// CHECK AUTH (used by launcher on load)
 function checkAuth() {
-  fetch('/auth')
-    .then(r => r.json())
-    .then(data => {
-      if (!data.authenticated) {
-        window.location.href = '/';
-      }
-    })
-    .catch(() => window.location.href = '/');
+  fetch('/auth').then(r=>r.json()).then(data=>{
+    if(!data.authenticated) window.location.href='/';
+  }).catch(()=>window.location.href='/');
 }
 
-// LOGOUT
 function logout() {
-  fetch('/logout', { method: 'POST' })
-    .then(r => r.json())
-    .then(data => {
-      window.location.href = '/';
-    })
-    .catch(() => window.location.href = '/');
+  fetch('/logout', {method:'POST'})
+    .then(()=>window.location.href='/')
+    .catch(()=>window.location.href='/');
 }
 
-// SEND MAIL
 function sendMail() {
   const senderName = document.getElementById('senderName').value;
   const email = document.getElementById('email').value.trim();
@@ -67,36 +48,25 @@ function sendMail() {
   const btn = document.getElementById('sendBtn');
 
   status.innerText = '';
-  if (!email || !password || !recipients) {
-    status.innerText = 'Email, app password and recipients are required';
-    status.style.color = 'red';
+  if(!email||!password||!recipients){
+    status.innerText='Email, app password and recipients required';
+    status.style.color='red';
     return;
   }
 
-  btn.disabled = true;
-  btn.innerText = 'Sending...';
+  btn.disabled=true;
+  btn.innerText='Sending...';
 
-  fetch('/send', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ senderName, email, password, recipients, subject, message })
-  })
-  .then(r => r.json())
-  .then(data => {
-    status.innerText = data.message || (data.success ? 'Sent' : 'Failed');
-    status.style.color = data.success ? 'green' : 'red';
-    if (data.success) {
-      // small UX: clear recipients & message but keep email & pass
-      document.getElementById('recipients').value = '';
-      document.getElementById('message').value = '';
-    }
-  })
-  .catch(err => {
-    status.innerText = 'Error: ' + err.message;
-    status.style.color = 'red';
-  })
-  .finally(() => {
-    btn.disabled = false;
-    btn.innerText = 'Send All';
-  });
+  fetch('/send',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({senderName,email,password,recipients,subject,message})
+  }).then(r=>r.json()).then(data=>{
+    status.innerText=data.message||'Done';
+    status.style.color=data.success?'green':'red';
+    if(data.success){ document.getElementById('recipients').value=''; document.getElementById('message').value=''; }
+  }).catch(err=>{
+    status.innerText='Error: '+err.message;
+    status.style.color='red';
+  }).finally(()=>{ btn.disabled=false; btn.innerText='Send All'; });
 }
