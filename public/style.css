@@ -1,91 +1,75 @@
-/* Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-}
+* { margin:0; padding:0; box-sizing:border-box; font-family:"Segoe UI",Tahoma,sans-serif; }
 
-/* Body - center content */
 body {
-  height: 100vh;
-  display: flex;
-  align-items: center;       /* Vertical center */
-  justify-content: center;   /* Horizontal center */
-  background: #f0f4f8;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:#f0f4f8;
+  padding:20px;
 }
 
-/* Form container */
-.form-box {
-  width: 380px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 30px 25px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  text-align: center;
-  display: flex;
-  flex-direction: column;    /* Stack inputs vertically */
-  gap: 12px;                 /* Space between boxes */
+.form-grid {
+  width:800px;
+  background:#fff;
+  padding:25px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.1);
 }
 
-/* Headings */
-.form-box h2 {
-  font-size: 20px;
-  color: #111827;
-  margin-bottom: 15px;
+.form-grid h2 {
+  text-align:center;
+  margin-bottom:20px;
+  color:#111827;
 }
 
-/* Inputs and Textareas */
-input, textarea {
-  width: 100%;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #cbd5e1;
-  font-size: 14px;
-  outline: none;
-  transition: 0.3s;
+.grid-row {
+  display:flex;
+  gap:15px;
+  margin-bottom:15px;
 }
 
-input:focus, textarea:focus {
-  border-color: #3b82f6;
-  box-shadow: 0 0 8px rgba(59,130,246,0.3);
+.grid-row input,
+.grid-row textarea {
+  flex:1;
+  padding:12px;
+  border-radius:8px;
+  border:1px solid #cbd5e1;
+  font-size:14px;
+  outline:none;
+  transition:0.3s;
 }
 
-/* Textareas resizing */
-textarea {
-  resize: vertical;
-  min-height: 80px;
-  max-height: 200px;
+.grid-row textarea {
+  min-height:100px;
+  resize:vertical;
 }
 
-/* Buttons */
-button {
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  background: #3b82f6;
-  color: #fff;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.3s;
+.grid-row input:focus,
+.grid-row textarea:focus {
+  border-color:#3b82f6;
+  box-shadow:0 0 8px rgba(59,130,246,0.3);
 }
 
-button:hover {
-  background: #2563eb;
+.grid-row button {
+  flex:1;
+  padding:12px;
+  border-radius:8px;
+  border:none;
+  background:#3b82f6;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.3s;
 }
 
-/* Logout small button */
-button.ghost {
-  background: transparent;
-  border: 1px solid #cbd5e1;
-  color: #111827;
-  padding: 10px;
+.grid-row button:hover {
+  background:#2563eb;
 }
 
-/* Status messages */
-#statusMessage, #loginStatus {
-  font-size: 13px;
-  color: #ef4444;
-  margin-top: 6px;
-  text-align: left;
+#statusMessage {
+  margin-top:10px;
+  font-size:14px;
+  color:#ef4444;
+  text-align:center;
 }
