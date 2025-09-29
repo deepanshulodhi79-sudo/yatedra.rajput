@@ -1,23 +1,91 @@
-* { margin:0; padding:0; box-sizing:border-box; font-family: Inter, system-ui, Arial, sans-serif; }
-body { height:100vh; display:flex; align-items:center; justify-content:center; background:#f3f4f6; color:#111827; padding:20px; }
-
-.form-box {
-  width:380px;
-  background:#fff;
-  border-radius:10px;
-  padding:25px 20px;
-  box-shadow:0 6px 18px rgba(15,23,42,0.06);
-  text-align:center;
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.top-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.form-box h2 { font-size:18px; margin-bottom:12px; color:#0f172a; }
+/* Body - center content */
+body {
+  height: 100vh;
+  display: flex;
+  align-items: center;       /* Vertical center */
+  justify-content: center;   /* Horizontal center */
+  background: #f0f4f8;
+}
 
-input, textarea, button { width:100%; margin:8px 0; padding:10px 12px; border-radius:8px; border:1px solid #e6e7eb; font-size:14px; }
+/* Form container */
+.form-box {
+  width: 380px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 30px 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  text-align: center;
+  display: flex;
+  flex-direction: column;    /* Stack inputs vertically */
+  gap: 12px;                 /* Space between boxes */
+}
 
-textarea { resize:vertical; min-height:80px; }
-button { cursor:pointer; background:#111827; color:#fff; font-weight:600; border:none; }
-button:hover { background:#333; }
-button.ghost { background:transparent; border:1px solid #e6e7eb; color:#111827; padding:6px 10px; border-radius:8px; }
-button:disabled { opacity:0.6; cursor:not-allowed; }
-.muted { font-size:13px; margin-top:10px; color:#374151; }
+/* Headings */
+.form-box h2 {
+  font-size: 20px;
+  color: #111827;
+  margin-bottom: 15px;
+}
+
+/* Inputs and Textareas */
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  outline: none;
+  transition: 0.3s;
+}
+
+input:focus, textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59,130,246,0.3);
+}
+
+/* Textareas resizing */
+textarea {
+  resize: vertical;
+  min-height: 80px;
+  max-height: 200px;
+}
+
+/* Buttons */
+button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  background: #3b82f6;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+/* Logout small button */
+button.ghost {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  color: #111827;
+  padding: 10px;
+}
+
+/* Status messages */
+#statusMessage, #loginStatus {
+  font-size: 13px;
+  color: #ef4444;
+  margin-top: 6px;
+  text-align: left;
+}
