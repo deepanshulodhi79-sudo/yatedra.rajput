@@ -1,30 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Login — Fast Mailer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      background: #f2f5f7;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      background: #fff;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.3rem;
+      font-size: 0.9rem;
+      color: #555;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 0.7rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .login-btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: #007bff;
+      border: none;
+      border-radius: 0.5rem;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+    .login-btn:hover {
+      background: #0056b3;
+    }
+    .error {
+      color: red;
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+  </style>
 </head>
 <body>
-<div class="form-box">
-  <h2>🔒 Login</h2>
-  <input id="username" placeholder="Username">
-  <input id="password" type="password" placeholder="Password">
-  <button id="loginBtn">Login</button>
-  <p id="loginStatus"></p>
-</div>
-
-<script>
-document.getElementById('loginBtn').addEventListener('click', () => {
-  const username = document.getElementById('username').value.trim();
-  const password = document.getElementById('password').value.trim();
-  fetch('/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username,password})})
-    .then(r=>r.json())
-    .then(data=>{
-      if(data.success) window.location.href='/launcher';
-      else document.getElementById('loginStatus').innerText=data.message;
-    });
-});
-</script>
+  <div class="login-container">
+    <h2>Bulk Mailer Login</h2>
+    <form action="/login" method="post">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" name="username" id="username" placeholder="Enter username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" name="password" id="password" placeholder="Enter password" required>
+      </div>
+      <button class="login-btn" type="submit">Login</button>
+    </form>
+    <% if (typeof error !== 'undefined') { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+  </div>
 </body>
 </html>
