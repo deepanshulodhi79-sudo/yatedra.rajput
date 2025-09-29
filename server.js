@@ -1,78 +1,66 @@
 const express = require("express");
-const session = require("express-session");
-const bodyParser = require("body-parser");
 const nodemailer = require("nodemailer");
 const path = require("path");
+const bodyParser = require("body-parser");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔒 Hardcoded credentials
-const HARD_USERNAME = "Yatendra Rajput";
-const HARD_PASSWORD = "Yattu@882";
-
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(session({
-  secret: "mail-launcher-secret",
-  resave: false,
-  saveUninitialized: true
-}));
 app.use(express.static(path.join(__dirname, "public")));
 
-// login route
-app.post("/login", (req, res) => {
-  const { username, password } = req.body;
-  if (username === HARD_USERNAME && password === HARD_PASSWORD) {
-    req.session.loggedIn = true;
-    return res.json({ success: true });
-  }
-  return res.json({ success: false, message: "Invalid credentials" });
-});
-
-// logout
-app.post("/logout", (req, res) => {
-  req.session.destroy();
-  res.json({ success: true });
-});
-
-// protect index.html
-app.get("/index.html", (req, res, next) => {
-  if (req.session.loggedIn) {
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
-  }
-  return res.redirect("/");
-});
-
-// mail sending
-app.post("/send-mail", async (req, res) => {
-  try {
-    const { senderName, gmail, appPassword, recipients, subject, message } = req.body;
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: gmail, pass: appPassword },
-    });
-
-    const recipientList = recipients.split("\n").map(r => r.trim()).filter(r => r);
-    for (let recipient of recipientList) {
-      await transporter.sendMail({
-        from: `"${senderName}" <${gmail}>`,
-        to: recipient,
-        subject,
-        text: message,
-      });
-    }
-    res.json({ success: true, message: "✅ All mails sent" });
-  } catch (err) {
-    res.json({ success: false, message: "❌ Failed: " + (err.message || err.toString()) });
-  }
-});
-
-// default route → login page
+// ✅ Default route → login.html
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+// Hardcoded login
+app.post("/login", (req, res) => {
+  const { username, password } = req.body;
+  if (username === "Yatendra Rajput" && password === "Yattu@882") {
+    res.json({ success: true });
+  } else {
+    res.json({ success: false, message: "Invalid credentials" });
+  }
 });
+
+// Send Mail
+app.post("/send", async (req, res) => {
+  try {
+    const { email, password, senderName, recipients, subject, message } = req.body;
+
+    if (!email || !password || !recipients) {
+      return res.json({ success: false, message: "Email, password and recipients are required" });
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user: email, pass: password }
+    });
+
+    const recipientList = recipients
+      .split(/[\n,]+/)
+      .map(r => r.trim())
+      .filter(r => r);
+
+    let mailOptions = {
+      from: `"${senderName || "Anonymous"}" <${email}>`,
+      bcc: recipientList,
+      subject: subject || "No Subject",
+      text: message || "",
+    };
+
+    let info = await transporter.sendMail(mailOptions);
+    console.log("✅ Mails sent:", info.response);
+
+    res.json({ success: true, message: `✅ Mail sent to ${recipientList.length} recipients` });
+  } catch (err) {
+    console.error("❌ Mail error:", err.message);
+    res.json({ success: false, message: err.message });
+  }
+});
+
+// Start server
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
