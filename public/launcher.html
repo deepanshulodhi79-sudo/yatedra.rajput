@@ -1,34 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Fast Mailer</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>Fast Mail Launcher</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="form-box">
-    <div class="top-row">
-      <h2>📧 Fast Mail Launcher</h2>
-      <button id="logoutSmall" class="ghost">Logout</button>
+  <div class="form-grid">
+    <h2>📧 Fast Mail Launcher</h2>
+
+    <!-- Line 1: Name + Sender Email -->
+    <div class="grid-row">
+      <input id="senderName" placeholder="Sender Name">
+      <input id="email" placeholder="Your Gmail">
     </div>
 
-    <input id="senderName" placeholder="Sender name (optional)" />
-    <input id="email" placeholder="Your Gmail" />
-    <input id="pass" type="password" placeholder="App password" />
+    <!-- Line 2: Password + Subject -->
+    <div class="grid-row">
+      <input id="pass" type="password" placeholder="App Password">
+      <input id="subject" placeholder="Subject">
+    </div>
 
-    <textarea id="recipients" placeholder="Recipients — comma or newline separated"></textarea>
-    <input id="subject" placeholder="Subject" />
-    <textarea id="message" placeholder="Message"></textarea>
+    <!-- Line 3: Message + Recipients -->
+    <div class="grid-row">
+      <textarea id="message" placeholder="Message Body"></textarea>
+      <textarea id="recipients" placeholder="Recipients (comma/newline)"></textarea>
+    </div>
 
-    <button id="sendBtn">Send All</button>
-    <p id="statusMessage" class="muted"></p>
-  </main>
+    <!-- Line 4: Send + Logout -->
+    <div class="grid-row">
+      <button id="sendBtn">Send All</button>
+      <button onclick="logout()">Logout</button>
+    </div>
 
-  <script src="script.js"></script>
-  <script>
-    document.getElementById('sendBtn').addEventListener('click', sendMail);
-    document.getElementById('logoutSmall').addEventListener('click', logout);
-    checkAuth();
-  </script>
+    <p id="statusMessage"></p>
+  </div>
+
+<script src="script.js"></script>
 </body>
 </html>
