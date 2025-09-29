@@ -1,31 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8" />
-  <title>Login - Mail Launcher</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="login-container">
-    <h2>Login to Mail Launcher</h2>
-    <input type="text" id="username" placeholder="Username" />
-    <input type="password" id="password" placeholder="Password" />
+    <h2>Mail Launcher Login</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
     <button onclick="login()">Login</button>
     <p id="error" class="error"></p>
   </div>
-
   <script>
     async function login() {
       const username = document.getElementById("username").value.trim();
       const password = document.getElementById("password").value.trim();
-
       const res = await fetch("/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password })
       });
       const data = await res.json();
-
       if (data.success) {
         window.location.href = "index.html";
       } else {
