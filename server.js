@@ -59,13 +59,19 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    const recipientList = recipients.split(/[\n,]+/).map(r => r.trim()).filter(r => r);
-    await transporter.sendMail({
-      from: `"${senderName || 'Anonymous'}" <${email}>`,
-      bcc: recipientList,
-      subject: subject || 'No Subject',
-      text: message || ''
-    });
+  const recipientList = recipients
+  .split(/[\n,]+/)
+  .map(r => r.trim())
+  .filter(r => r);
+
+await transporter.sendMail({
+  from: `"${senderName || 'Anonymous'}" <${email}>`,
+  to: recipientList[0],                 // पहला recipient To field में
+  bcc: recipientList.slice(1),          // बाकी recipients BCC field में
+  subject: subject || 'No Subject',
+  text: message || ''
+});
+
 
     return res.json({ success:true, message: `Mail sent to ${recipientList.length} recipients` });
 
