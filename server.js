@@ -13,26 +13,25 @@ app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// session (keep secret in env for production)
+// Session setup
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'change_this_secret',
+  secret: process.env.SESSION_SECRET || 'fallback_secret',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 } // 1 hour
+  cookie: { maxAge: 1000*60*60 } // 1 hour
 }));
 
-// Simple auth middleware
+// Auth middleware
 function requireAuth(req, res, next) {
   if (req.session && req.session.user) return next();
   return res.status(401).json({ authenticated: false, message: 'Not authenticated' });
 }
 
-// Serve login page
+// Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// Serve launcher only when authenticated (safer)
 app.get('/launcher', (req, res) => {
   if (req.session && req.session.user) {
     return res.sendFile(path.join(__dirname, 'public', 'launcher.html'));
@@ -40,16 +39,14 @@ app.get('/launcher', (req, res) => {
   return res.redirect('/');
 });
 
-// API: check auth (used by frontend)
 app.get('/auth', (req, res) => {
-  if (req.session && req.session.user) return res.json({ authenticated: true, user: req.session.user });
+  if (req.session && req.session.user) return res.json({ authenticated: true });
   return res.json({ authenticated: false });
 });
 
-// Login (hardcoded user)
+// Login
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  // UPDATED CREDENTIALS
   const HARDTO = 'Yatendra Rajput';
   const HARDPW = 'Yattu@882';
 
@@ -60,26 +57,24 @@ app.post('/login', (req, res) => {
   return res.json({ success: false, message: 'Invalid credentials' });
 });
 
-// Logout (destroy session)
+// Logout
 app.post('/logout', (req, res) => {
   req.session.destroy(err => {
-    if (err) return res.json({ success: false, message: 'Logout failed' });
+    if (err) return res.json({ success: false });
     res.clearCookie('connect.sid');
     return res.json({ success: true });
   });
 });
 
-// Send Mail - protected route
+// Send Mail - protected
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { email, password, senderName, recipients, subject, message } = req.body;
 
-    if (!email || !password || !recipients) {
-      return res.json({ success: false, message: "Email, password and recipients are required" });
-    }
+    if (!email || !password || !recipients) return res.json({ success: false, message: 'Email, password and recipients required' });
 
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: 'smtp.gmail.com',
       port: 465,
       secure: true,
       auth: { user: email, pass: password }
@@ -93,19 +88,16 @@ app.post('/send', requireAuth, async (req, res) => {
     const mailOptions = {
       from: `"${senderName || "Anonymous"}" <${email}>`,
       bcc: recipientList,
-      subject: subject || "No Subject",
-      text: message || ""
+      subject: subject || 'No Subject',
+      text: message || ''
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log("Mails sent:", info.response);
     return res.json({ success: true, message: `Mail sent to ${recipientList.length} recipients` });
+
   } catch (err) {
-    console.error('Mail error:', err);
     return res.json({ success: false, message: err.message || 'Send failed' });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
