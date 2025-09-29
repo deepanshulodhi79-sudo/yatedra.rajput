@@ -13,24 +13,21 @@
     </div>
 
     <input id="senderName" placeholder="Sender name (optional)" />
-    <input id="email" placeholder="Your Gmail (example@gmail.com)" autocomplete="email" />
-    <input id="pass" type="password" placeholder="App password (Gmail app password)" autocomplete="current-password" />
+    <input id="email" placeholder="Your Gmail" />
+    <input id="pass" type="password" placeholder="App password" />
 
     <textarea id="recipients" placeholder="Recipients — comma or newline separated"></textarea>
     <input id="subject" placeholder="Subject" />
     <textarea id="message" placeholder="Message"></textarea>
 
     <button id="sendBtn">Send All</button>
-
     <p id="statusMessage" class="muted"></p>
   </main>
 
   <script src="script.js"></script>
   <script>
-    // attach buttons
     document.getElementById('sendBtn').addEventListener('click', sendMail);
     document.getElementById('logoutSmall').addEventListener('click', logout);
-    // check auth on load
     checkAuth();
   </script>
 </body>
