@@ -1,25 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Login — Fast Mailer</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<title>Login — Fast Mailer</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="form-box">
-    <h2>🔒 Sign in</h2>
-    <input id="username" placeholder="Username" autocomplete="username" />
-    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
-    <button id="loginBtn">Sign in</button>
-    <p id="loginStatus" class="muted"></p>
-  </main>
+<div class="form-box">
+  <h2>🔒 Login</h2>
+  <input id="username" placeholder="Username">
+  <input id="password" type="password" placeholder="Password">
+  <button id="loginBtn">Login</button>
+  <p id="loginStatus"></p>
+</div>
 
-  <script src="script.js"></script>
-  <script>
-    document.getElementById('loginBtn').addEventListener('click', login);
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') login();
+<script>
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  fetch('/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username,password})})
+    .then(r=>r.json())
+    .then(data=>{
+      if(data.success) window.location.href='/launcher';
+      else document.getElementById('loginStatus').innerText=data.message;
     });
-  </script>
+});
+</script>
 </body>
 </html>
