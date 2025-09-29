@@ -1,75 +1,102 @@
-// Protect launcher
-(function protect() {
-  if (window.location.pathname.endsWith("launcher.html") && localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "login.html";
-  }
-})();
+// script.js - frontend logic (uses server-side session auth)
 
-// Login
+// LOGIN
 function login() {
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value.trim();
+  const status = document.getElementById('loginStatus');
 
-  fetch("/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  status.innerText = '';
+  if (!username || !password) {
+    status.innerText = 'Enter username & password';
+    status.style.color = 'red';
+    return;
+  }
+
+  fetch('/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password })
   })
-  .then(res => res.json())
+  .then(r => r.json())
   .then(data => {
-    const status = document.getElementById("loginStatus");
     if (data.success) {
-      localStorage.setItem("loggedIn", "true");
-      window.location.href = "launcher.html";
+      window.location.href = '/launcher';
     } else {
-      status.innerText = data.message;
-      status.style.color = "red";
+      status.innerText = data.message || 'Login failed';
+      status.style.color = 'red';
     }
   })
   .catch(err => {
-    const status = document.getElementById("loginStatus");
-    status.innerText = "❌ Error: " + err.message;
-    status.style.color = "red";
+    status.innerText = 'Error: ' + err.message;
+    status.style.color = 'red';
   });
 }
 
-// Logout
-function logout() {
-  localStorage.removeItem("loggedIn");
-  window.location.href = "login.html";
+// CHECK AUTH (used by launcher on load)
+function checkAuth() {
+  fetch('/auth')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.authenticated) {
+        window.location.href = '/';
+      }
+    })
+    .catch(() => window.location.href = '/');
 }
 
-// Send Mail
+// LOGOUT
+function logout() {
+  fetch('/logout', { method: 'POST' })
+    .then(r => r.json())
+    .then(data => {
+      window.location.href = '/';
+    })
+    .catch(() => window.location.href = '/');
+}
+
+// SEND MAIL
 function sendMail() {
-  const senderName = document.getElementById("senderName").value;
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("pass").value;
-  const recipients = document.getElementById("recipients").value;
-  const subject = document.getElementById("subject").value;
-  const message = document.getElementById("message").value;
+  const senderName = document.getElementById('senderName').value;
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('pass').value.trim();
+  const recipients = document.getElementById('recipients').value.trim();
+  const subject = document.getElementById('subject').value;
+  const message = document.getElementById('message').value;
+  const status = document.getElementById('statusMessage');
+  const btn = document.getElementById('sendBtn');
 
-  const sendBtn = document.getElementById("sendBtn");
-  const statusMessage = document.getElementById("statusMessage");
+  status.innerText = '';
+  if (!email || !password || !recipients) {
+    status.innerText = 'Email, app password and recipients are required';
+    status.style.color = 'red';
+    return;
+  }
 
-  sendBtn.disabled = true;
-  sendBtn.innerText = "⏳ Sending...";
+  btn.disabled = true;
+  btn.innerText = 'Sending...';
 
-  fetch("/send", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  fetch('/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ senderName, email, password, recipients, subject, message })
   })
-  .then(res => res.json())
+  .then(r => r.json())
   .then(data => {
-    statusMessage.innerText = data.message;
-    statusMessage.style.color = data.success ? "green" : "red";
+    status.innerText = data.message || (data.success ? 'Sent' : 'Failed');
+    status.style.color = data.success ? 'green' : 'red';
+    if (data.success) {
+      // small UX: clear recipients & message but keep email & pass
+      document.getElementById('recipients').value = '';
+      document.getElementById('message').value = '';
+    }
   })
   .catch(err => {
-    statusMessage.innerText = "❌ " + err.message;
-    statusMessage.style.color = "red";
+    status.innerText = 'Error: ' + err.message;
+    status.style.color = 'red';
   })
   .finally(() => {
-    sendBtn.disabled = false;
-    sendBtn.innerText = "Send All";
+    btn.disabled = false;
+    btn.innerText = 'Send All';
   });
 }
