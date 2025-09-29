@@ -1,20 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Fast Mailer Login</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <title>Login — Fast Mailer</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="form-box">
-    <h2>🔒 Login</h2>
+  <main class="form-box">
+    <h2>🔒 Sign in</h2>
 
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
+    <input id="username" placeholder="Username" autocomplete="username" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
 
-    <button onclick="login()">Login</button>
+    <button id="loginBtn">Sign in</button>
 
-    <p id="loginStatus"></p>
-  </div>
+    <p id="loginStatus" class="muted"></p>
+  </main>
+
   <script src="script.js"></script>
+  <script>
+    document.getElementById('loginBtn').addEventListener('click', login);
+    // Press Enter to submit
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') login();
+    });
+  </script>
 </body>
 </html>
