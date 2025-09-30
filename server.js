@@ -25,8 +25,12 @@ function requireAuth(req, res, next) {
 }
 
 // Routes
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'login.html')));
-app.get('/launcher', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'launcher.html')));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+app.get('/launcher', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'launcher.html'));
+});
 
 // Login
 app.post('/login', (req, res) => {
@@ -46,42 +50,25 @@ app.post('/logout', (req, res) => {
   });
 });
 
+// Send Mail
 app.post('/send', requireAuth, async (req, res) => {
   try {
-    const { email, password, senderName, recipients, subject, message } = req.body;
-
-    if (!email || !password || !recipients) {
-      return res.json({ success: false, message: "Email, password and recipients are required" });
-    }
-
-   app.post('/send', requireAuth, async (req, res) => {
-  try {
-    const { email, password, senderName, recipients, subject, message } = req.body;
-
-    if (!email || !password || !recipients) {
-      return res.json({ success: false, message: "Email, password and recipients are required" });
-    }
-
-    app.post('/send', requireAuth, async (req, res) => {
-  try {
-    const { email, password, senderName, recipients, subject, message } = req.body;
-
-    // Validate inputs
+    const { senderName, email, password, recipients, subject, message } = req.body;
     if (!email || !password || !recipients) {
       return res.json({ success: false, message: "Email, password and recipients required" });
     }
 
-    // Define recipientList here
+    // Split recipients
     const recipientList = recipients
       .split(/[\n,]+/)
       .map(r => r.trim())
       .filter(r => r);
 
     if (recipientList.length === 0) {
-      return res.json({ success: false, message: "No valid recipients found" });
+      return res.json({ success: false, message: "No valid recipients" });
     }
 
-    // Create transporter (fresh)
+    // Create transporter fresh
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -89,7 +76,6 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    // Use recipientList in sendMail
     const mailOptions = {
       from: `"${senderName || 'Anonymous'}" <${email}>`,
       to: recipientList[0],
@@ -98,7 +84,10 @@ app.post('/send', requireAuth, async (req, res) => {
       text: message || ""
     };
 
+    console.log("MailOptions:", mailOptions);
+
     let info = await transporter.sendMail(mailOptions);
+    console.log("Send info:", info);
 
     return res.json({ success: true, message: `Mail sent to ${recipientList.length} recipients` });
   } catch (err) {
@@ -107,11 +96,6 @@ app.post('/send', requireAuth, async (req, res) => {
   }
 });
 
-    return res.json({ success:true, message: `Mail sent to ${recipientList.length} recipients` });
-
-  } catch(err) {
-    return res.json({ success:false, message: err.message });
-  }
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
-
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
