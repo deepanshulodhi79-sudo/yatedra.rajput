@@ -54,6 +54,14 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "Email, password and recipients are required" });
     }
 
+   app.post('/send', requireAuth, async (req, res) => {
+  try {
+    const { email, password, senderName, recipients, subject, message } = req.body;
+
+    if (!email || !password || !recipients) {
+      return res.json({ success: false, message: "Email, password and recipients are required" });
+    }
+
     // Split fresh list
     const recipientList = recipients
       .split(/[\n,]+/)
