@@ -46,30 +46,39 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// Send Mail
 app.post('/send', requireAuth, async (req, res) => {
   try {
-    const { senderName, email, password, recipients, subject, message } = req.body;
-    if (!email || !password || !recipients) return res.json({ success:false, message:"Email, password and recipients required" });
+    const { email, password, senderName, recipients, subject, message } = req.body;
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,
-      secure: true,
-      auth: { user: email, pass: password }
-    });
+    if (!email || !password || !recipients) {
+      return res.json({ success: false, message: "Email, password and recipients are required" });
+    }
 
-  const recipientList = recipients
-  .split(/[\n,]+/)
-  .map(r => r.trim())
-  .filter(r => r);
+    // Split fresh list
+    const recipientList = recipients
+      .split(/[\n,]+/)
+      .map(r => r.trim())
+      .filter(r => r);
 
-await transporter.sendMail({
-  from: `"${senderName || 'Anonymous'}" <${email}>`,
-  to: recipientList[0],                 // पहला recipient To field में
-  bcc: recipientList.slice(1),          // बाकी recipients BCC field में
-  subject: subject || 'No Subject',
-  text: message || ''
+    if (recipientList.length === 0) {
+      return res.json({ success: false, message: "No valid recipients" });
+    }
+
+    // Construct mail options fresh
+    const mailOptions = {
+      from: `"${senderName || 'Anonymous'}" <${email}>`,
+      to: recipientList[0],                // पहला recipient
+      bcc: recipientList.slice(1),         // बाकी BCC
+      subject: subject || 'No Subject',
+      text: message || ''
+    };
+
+    let info = await transporter.sendMail(mailOptions);
+
+    return res.json({ success: true, message: `Mail sent to ${recipientList.length}` });
+  } catch (err) {
+    return res.json({ success: false, message: err.message });
+  }
 });
 
 
