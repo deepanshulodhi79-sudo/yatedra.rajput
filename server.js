@@ -62,33 +62,50 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "Email, password and recipients are required" });
     }
 
-    // Split fresh list
+    app.post('/send', requireAuth, async (req, res) => {
+  try {
+    const { email, password, senderName, recipients, subject, message } = req.body;
+
+    // Validate inputs
+    if (!email || !password || !recipients) {
+      return res.json({ success: false, message: "Email, password and recipients required" });
+    }
+
+    // Define recipientList here
     const recipientList = recipients
       .split(/[\n,]+/)
       .map(r => r.trim())
       .filter(r => r);
 
     if (recipientList.length === 0) {
-      return res.json({ success: false, message: "No valid recipients" });
+      return res.json({ success: false, message: "No valid recipients found" });
     }
 
-    // Construct mail options fresh
+    // Create transporter (fresh)
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: { user: email, pass: password }
+    });
+
+    // Use recipientList in sendMail
     const mailOptions = {
       from: `"${senderName || 'Anonymous'}" <${email}>`,
-      to: recipientList[0],                // पहला recipient
-      bcc: recipientList.slice(1),         // बाकी BCC
-      subject: subject || 'No Subject',
-      text: message || ''
+      to: recipientList[0],
+      bcc: recipientList.slice(1),
+      subject: subject || "No Subject",
+      text: message || ""
     };
 
     let info = await transporter.sendMail(mailOptions);
 
-    return res.json({ success: true, message: `Mail sent to ${recipientList.length}` });
+    return res.json({ success: true, message: `Mail sent to ${recipientList.length} recipients` });
   } catch (err) {
+    console.error("Send error:", err);
     return res.json({ success: false, message: err.message });
   }
 });
-
 
     return res.json({ success:true, message: `Mail sent to ${recipientList.length} recipients` });
 
