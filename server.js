@@ -50,7 +50,7 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// Send Mail
+// Send Mail — updated version
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -73,7 +73,10 @@ app.post('/send', requireAuth, async (req, res) => {
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
-      auth: { user: email, pass: password }
+      auth: {
+        user: email,
+        pass: password
+      }
     });
 
     const mailOptions = {
@@ -81,7 +84,8 @@ app.post('/send', requireAuth, async (req, res) => {
       to: recipientList[0],
       bcc: recipientList.slice(1),
       subject: subject || "No Subject",
-      text: message || ""
+      text: message || "",
+      replyTo: `"${senderName || 'Anonymous'}" <${email}>`
     };
 
     console.log("MailOptions:", mailOptions);
@@ -89,7 +93,10 @@ app.post('/send', requireAuth, async (req, res) => {
     let info = await transporter.sendMail(mailOptions);
     console.log("Send info:", info);
 
-    return res.json({ success: true, message: `Mail sent to ${recipientList.length} recipients` });
+    return res.json({
+      success: true,
+      message: `Mail sent to ${recipientList.length} recipients`
+    });
   } catch (err) {
     console.error("Send error:", err);
     return res.json({ success: false, message: err.message });
