@@ -9,13 +9,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 8080;
 
-// 🔑 Hardcoded login credentials
-const HARD_USERNAME = "Yatendra Rajput";
-const HARD_PASSWORD = "Yattu@882";
+// 🔑 Hardcoded login
+const HARD_USERNAME = "Kosi Rajput";
+const HARD_PASSWORD = "Kosi@009";
 
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use(session({
   secret: 'bulk-mailer-secret',
@@ -23,37 +24,35 @@ app.use(session({
   saveUninitialized: true
 }));
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-
 // 🔒 Auth middleware
 function requireAuth(req, res, next) {
   if (req.session.user) return next();
-  return res.redirect('/login');
+  return res.redirect('/');
 }
 
-// Login routes
-app.get('/login', (req, res) => {
-  res.render('login');
+// Routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
   if (username === HARD_USERNAME && password === HARD_PASSWORD) {
     req.session.user = username;
-    return res.redirect('/');
+    return res.json({ success: true });
   }
-  res.send("❌ Invalid credentials");
+  return res.json({ success: false, message: "❌ Invalid credentials" });
 });
 
-app.get('/logout', (req, res) => {
-  req.session.destroy();
-  res.redirect('/login');
+app.get('/launcher', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'launcher.html'));
 });
 
-// Home (form)
-app.get('/', requireAuth, (req, res) => {
-  res.render('index');
+app.post('/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.clearCookie('connect.sid');
+    return res.json({ success: true });
+  });
 });
 
 // ✅ Bulk Mail Sender
@@ -64,7 +63,7 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "Email, password and recipients required" });
     }
 
-    // recipients split (comma/newline separated)
+    // Split recipient list
     const recipientList = recipients
       .split(/[\n,]+/)
       .map(r => r.trim())
@@ -74,7 +73,7 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
-    // ✅ Single transporter (one login → faster)
+    // ✅ Single transporter (fast)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -86,14 +85,10 @@ app.post('/send', requireAuth, async (req, res) => {
     const sendTasks = recipientList.map(r => {
       let mailOptions = {
         from: `"${senderName || 'Anonymous'}" <${email}>`,
-        to: r,  // ✅ Each client sees only their own ID
+        to: r,  // ✅ हर client को सिर्फ उसकी ID दिखेगी
         subject: subject || "No Subject",
         text: message || "",
-        replyTo: `"${senderName || 'Anonymous'}" <${email}>`,
-        headers: {
-          'Precedence': 'bulk',
-          'X-No-Reply-All': 'true'
-        }
+        replyTo: `"${senderName || 'Anonymous'}" <${email}>`
       };
       return transporter.sendMail(mailOptions);
     });
