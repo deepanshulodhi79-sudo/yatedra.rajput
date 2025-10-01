@@ -60,7 +60,22 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-// ✅ Bulk Mail Sender with throttle
+// Helper function for batch sending
+async function sendBatch(transporter, mails, batchSize = 5) {
+  const results = [];
+  for (let i = 0; i < mails.length; i += batchSize) {
+    const batch = mails.slice(i, i + batchSize);
+    const promises = batch.map(mail => transporter.sendMail(mail));
+    const settled = await Promise.allSettled(promises);
+    results.push(...settled);
+
+    // Small pause between batches to avoid Gmail rate-limit
+    await delay(200); // 0.2 sec pause
+  }
+  return results;
+}
+
+// ✅ Bulk Mail Sender with fast batch sending
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -85,21 +100,16 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    // ✅ Send with delay to avoid Gmail block
-    for (let r of recipientList) {
-      let mailOptions = {
-        from: `"${senderName || 'Anonymous'}" <${email}>`,
-        to: r,
-        subject: subject || "No Subject",
-        text: message || ""
-      };
+    // Prepare mails
+    const mails = recipientList.map(r => ({
+      from: `"${senderName || 'Anonymous'}" <${email}>`,
+      to: r,
+      subject: subject || "No Subject",
+      text: message || ""
+    }));
 
-      await transporter.sendMail(mailOptions);
-      console.log(`📧 Sent to ${r}`);
-
-      // Small delay (0.4 sec) per mail
-      await delay(400);
-    }
+    // Send mails in batches (parallel within batch)
+    await sendBatch(transporter, mails, 5); // 5 mails parallel
 
     return res.json({ success: true, message: `✅ Mail sent to ${recipientList.length}` });
 
