@@ -1,55 +1,3 @@
-require('dotenv').config();
-const express = require('express');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
-const path = require('path');
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-app.use(bodyParser.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'fallback_secret',
-  resave: false,
-  saveUninitialized: false,
-}));
-
-// Auth middleware
-function requireAuth(req, res, next) {
-  if (req.session && req.session.user) return next();
-  return res.redirect('/');
-}
-
-// Routes
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'login.html'));
-});
-app.get('/launcher', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'launcher.html'));
-});
-
-// Login
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (username === "Yatendra Rajput" && password === "Yattu@882") {
-    req.session.user = { name: username };
-    return res.json({ success: true });
-  }
-  return res.json({ success: false, message: 'Invalid credentials' });
-});
-
-// Logout
-app.post('/logout', (req, res) => {
-  req.session.destroy(err => {
-    res.clearCookie('connect.sid');
-    return res.json({ success: true });
-  });
-});
-
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -66,7 +14,7 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
-    // ✅ Ek hi transporter banaya
+    // ✅ Single transporter (fast + no repeated login)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -74,19 +22,22 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    // ✅ Promise array
+    // ✅ Send mails in parallel (fast like before)
     const sendTasks = recipientList.map(r => {
       let mailOptions = {
         from: `"${senderName || 'Anonymous'}" <${email}>`,
-        to: r,
+        to: r,                      // ✅ each client sees only their own email
         subject: subject || "No Subject",
         text: message || "",
-        replyTo: `"${senderName || 'Anonymous'}" <${email}>`
+        replyTo: `"${senderName || 'Anonymous'}" <${email}>`,
+        headers: {
+          'Precedence': 'bulk',
+          'X-No-Reply-All': 'true'
+        }
       };
       return transporter.sendMail(mailOptions);
     });
 
-    // ✅ Parallel bhejo (Promise.all) → fast ho jayega
     await Promise.all(sendTasks);
 
     return res.json({ success: true, message: `Mail sent to ${recipientList.length}` });
@@ -94,9 +45,4 @@ app.post('/send', requireAuth, async (req, res) => {
     console.error("Send error:", err);
     return res.json({ success: false, message: err.message });
   }
-});
-
-
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
 });
