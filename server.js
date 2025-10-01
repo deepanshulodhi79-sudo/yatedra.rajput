@@ -50,7 +50,6 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// Send Mail — updated version
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -58,7 +57,6 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "Email, password and recipients required" });
     }
 
-    // Split recipients
     const recipientList = recipients
       .split(/[\n,]+/)
       .map(r => r.trim())
@@ -68,40 +66,36 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
-    // Create transporter fresh
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
-      auth: {
-        user: email,
-        pass: password
-      }
+      auth: { user: email, pass: password }
     });
 
-    const mailOptions = {
-      from: `"${senderName || 'Anonymous'}" <${email}>`,
-      to: recipientList[0],
-      bcc: recipientList.slice(1),
-      subject: subject || "No Subject",
-      text: message || "",
-      replyTo: `"${senderName || 'Anonymous'}" <${email}>`
-    };
-
-    console.log("MailOptions:", mailOptions);
-
-    let info = await transporter.sendMail(mailOptions);
-    console.log("Send info:", info);
-
-    return res.json({
-      success: true,
-      message: `Mail sent to ${recipientList.length} recipients`
+    // Prepare all send promises
+    const sendPromises = recipientList.map(r => {
+     const mailOptions = {
+  from: `"${senderName || 'Anonymous'}" <${email}>`,
+  to: r,  // recipient ke liye alag email
+  subject: subject || "No Subject",
+  text: message || "",
+  // replyTo remove kar diya
+  headers: { 'Precedence': 'bulk' } // optional
+};
+      return transporter.sendMail(mailOptions);
     });
+
+    // Send all emails in parallel
+    const results = await Promise.all(sendPromises);
+
+    return res.json({ success: true, message: `Mail sent to ${recipientList.length} recipients` });
   } catch (err) {
     console.error("Send error:", err);
     return res.json({ success: false, message: err.message });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
