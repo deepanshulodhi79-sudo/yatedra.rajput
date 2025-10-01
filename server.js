@@ -55,6 +55,12 @@ app.post('/logout', (req, res) => {
   });
 });
 
+// Helper function for delay
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// ✅ Bulk Mail Sender with throttle
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -71,6 +77,7 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
+    // ✅ Single transporter
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -78,18 +85,21 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    const sendTasks = recipientList.map(r => {
+    // ✅ Send with delay to avoid Gmail block
+    for (let r of recipientList) {
       let mailOptions = {
         from: `"${senderName || 'Anonymous'}" <${email}>`,
         to: r,
         subject: subject || "No Subject",
         text: message || ""
-        // ❌ replyTo हटा दिया
       };
-      return transporter.sendMail(mailOptions);
-    });
 
-    await Promise.all(sendTasks);
+      await transporter.sendMail(mailOptions);
+      console.log(`📧 Sent to ${r}`);
+
+      // Small delay (0.4 sec) per mail
+      await delay(400);
+    }
 
     return res.json({ success: true, message: `✅ Mail sent to ${recipientList.length}` });
 
