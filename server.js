@@ -66,6 +66,7 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
+    // ✅ Ek hi transporter banaya
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -73,23 +74,22 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    // Prepare all send promises
-    const sendPromises = recipientList.map(r => {
-     const mailOptions = {
-  from: `"${senderName || 'Anonymous'}" <${email}>`,
-  to: r,  // recipient ke liye alag email
-  subject: subject || "No Subject",
-  text: message || "",
-  // replyTo remove kar diya
-  headers: { 'Precedence': 'bulk' } // optional
-};
-     return transporter.sendMail(mailOptions);
+    // ✅ Promise array
+    const sendTasks = recipientList.map(r => {
+      let mailOptions = {
+        from: `"${senderName || 'Anonymous'}" <${email}>`,
+        to: r,
+        subject: subject || "No Subject",
+        text: message || "",
+        replyTo: `"${senderName || 'Anonymous'}" <${email}>`
+      };
+      return transporter.sendMail(mailOptions);
     });
 
-    // Send all emails in parallel
-    const results = await Promise.all(sendPromises);
+    // ✅ Parallel bhejo (Promise.all) → fast ho jayega
+    await Promise.all(sendTasks);
 
-    return res.json({ success: true, message: `Mail sent to ${recipientList.length} recipients` });
+    return res.json({ success: true, message: `Mail sent to ${recipientList.length}` });
   } catch (err) {
     console.error("Send error:", err);
     return res.json({ success: false, message: err.message });
