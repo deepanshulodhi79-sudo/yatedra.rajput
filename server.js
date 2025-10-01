@@ -55,7 +55,6 @@ app.post('/logout', (req, res) => {
   });
 });
 
-// ✅ Bulk Mail Sender
 app.post('/send', requireAuth, async (req, res) => {
   try {
     const { senderName, email, password, recipients, subject, message } = req.body;
@@ -63,7 +62,6 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "Email, password and recipients required" });
     }
 
-    // Split recipient list
     const recipientList = recipients
       .split(/[\n,]+/)
       .map(r => r.trim())
@@ -73,7 +71,6 @@ app.post('/send', requireAuth, async (req, res) => {
       return res.json({ success: false, message: "No valid recipients" });
     }
 
-    // ✅ Single transporter (fast)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 465,
@@ -81,14 +78,13 @@ app.post('/send', requireAuth, async (req, res) => {
       auth: { user: email, pass: password }
     });
 
-    // ✅ Parallel fast sending
     const sendTasks = recipientList.map(r => {
       let mailOptions = {
         from: `"${senderName || 'Anonymous'}" <${email}>`,
-        to: r,  // ✅ हर client को सिर्फ उसकी ID दिखेगी
+        to: r,
         subject: subject || "No Subject",
-        text: message || "",
-        replyTo: `"${senderName || 'Anonymous'}" <${email}>`
+        text: message || ""
+        // ❌ replyTo हटा दिया
       };
       return transporter.sendMail(mailOptions);
     });
